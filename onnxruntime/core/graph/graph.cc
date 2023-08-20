@@ -878,7 +878,6 @@ void Node::Init(const std::string& name,
   if (kOnnxDomainAlias == domain_) {
     domain_ = kOnnxDomain;
   }
-
   // Set each arg count as 1 by default.
   // It could be adjusted when resolving the node with its operator
   // information.
@@ -895,6 +894,65 @@ void Node::Init(const std::string& name,
         ORT_THROW("Creating node with a subgraph via AddNode is not supported in this build.");
 #endif
       }
+    }
+  }
+}
+
+void Node::Init(const NodeProto& node_proto, const ArgNameToTypeMap& name_to_type_map, const std::vector<NodeArg*>& input_args, const std::vector<NodeArg*>& output_args) {
+  name_ = node_proto.name();
+  op_type_ = node_proto.op_type();
+  description_ = node_proto.doc_string();
+  domain_ = node_proto.domain();
+  can_be_saved_ = true;
+  priority_ = 0;
+  if (kOnnxDomainAlias == domain_) {
+    domain_ = kOnnxDomain;
+  }
+
+  definitions_.input_defs = input_args;
+  definitions_.output_defs = output_args;
+  definitions_.input_arg_count.assign(input_args.size(), 1);
+
+  int num_attributes = node_proto.attribute_size();
+  attributes_.reserve(num_attributes);
+  for (int i = 0; i < num_attributes; ++i) {
+    const auto& attr = node_proto.attribute(i);
+    attributes_[attr.name()] = attr;
+  }
+}
+
+void Node::Init(const std::string& name,
+                const std::string& op_type,
+                const std::string& description,
+                const std::vector<NodeArg*>& input_args,
+                const std::vector<NodeArg*>& output_args,
+                const NodeAttributes& attributes,
+                const std::string& domain) {
+  name_ = name;
+  op_type_ = op_type;
+  description_ = description;
+  definitions_.input_defs = input_args;
+  definitions_.output_defs = output_args;
+  domain_ = domain;
+  can_be_saved_ = true;
+  priority_ = 0;
+  if (kOnnxDomainAlias == domain_) {
+    domain_ = kOnnxDomain;
+  }
+
+  // Set each arg count as 1 by default.
+  // It could be adjusted when resolving the node with its operator
+  // information.
+  definitions_.input_arg_count.assign(input_args.size(), 1);
+  attributes_ = std::move(attributes);
+
+  for (auto it = attributes_.cbegin(); it != attributes_.cend(); ++it) {
+    if (utils::HasGraph(it->second)) {
+#if !defined(ORT_MINIMAL_BUILD)
+      CreateSubgraph(it->first);
+#else
+      ORT_THROW("Creating node with a subgraph via AddNode is not supported in this build.");
+#endif
     }
   }
 }
@@ -3069,27 +3127,43 @@ Node& Graph::AddNode(const Node& other) {
   return new_node;
 }
 
+// Node& Graph::AddNode(const NodeProto& node_proto,
+//                      const ArgNameToTypeMap& name_to_type_map) {
+//   auto input_defs = CreateNodeArgs(node_proto.input(), name_to_type_map);
+//   auto output_defs = CreateNodeArgs(node_proto.output(), name_to_type_map);
+
+//   const int num_attributes = node_proto.attribute_size();
+//   NodeAttributes attributes;
+//   attributes.reserve(num_attributes);
+
+//   for (int i = 0; i < num_attributes; ++i) {
+//     auto& attr = node_proto.attribute(i);
+//     attributes[attr.name()] = std::move(attr);
+//   }
+
+//   // change to pass by ref
+//   return AddNode(node_proto.name(),
+//                  node_proto.op_type(),
+//                  node_proto.doc_string(),
+//                  input_defs,
+//                  output_defs,
+//                  std::move(attributes),
+//                  node_proto.domain());
+
+
+// }
+
 Node& Graph::AddNode(const NodeProto& node_proto,
                      const ArgNameToTypeMap& name_to_type_map) {
+
   auto input_defs = CreateNodeArgs(node_proto.input(), name_to_type_map);
   auto output_defs = CreateNodeArgs(node_proto.output(), name_to_type_map);
-
-  const int num_attributes = node_proto.attribute_size();
-  NodeAttributes attributes;
-  attributes.reserve(num_attributes);
-
-  for (int i = 0; i < num_attributes; ++i) {
-    auto& attr = node_proto.attribute(i);
-    attributes[attr.name()] = attr;
+  const gsl::not_null<Node*> node = AllocateNode();
+  node->Init(node_proto, name_to_type_map, input_defs, output_defs);
+  if (0 != node_proto.op_type().compare(kNoOp)) {
+    GraphProtoSyncNeeded(true);
   }
-
-  return AddNode(node_proto.name(),
-                 node_proto.op_type(),
-                 node_proto.doc_string(),
-                 input_defs,
-                 output_defs,
-                 &attributes,
-                 node_proto.domain());
+  return *node;
 }
 
 static flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>>>
@@ -3283,6 +3357,36 @@ Node& Graph::AddNode(const std::string& name,
 
   return *node;
 }
+
+Node& Graph::AddNode(const std::string& name,
+                     const std::string& op_type,
+                     const std::string& description,
+                     gsl::span<NodeArg* const> input_args,
+                     gsl::span<NodeArg* const> output_args,
+                     const NodeAttributes& attributes,
+                     const std::string& domain) {
+  std::vector<NodeArg*> inputs;
+  std::vector<NodeArg*> outputs;
+  inputs.resize(input_args.size());
+  outputs.resize(output_args.size());
+  int i = 0;
+  for (auto input_arg : input_args) {
+    inputs[i++] = &GetOrCreateNodeArg(input_arg->Name(), input_arg->TypeAsProto());
+  }
+  i = 0;
+  for (auto output_arg : output_args) {
+    outputs[i++] = &GetOrCreateNodeArg(output_arg->Name(), output_arg->TypeAsProto());
+  }
+
+  const gsl::not_null<Node*> node = AllocateNode();
+  node->Init(name, op_type, description, inputs, outputs, std::move(attributes), domain);
+  if (0 != op_type.compare(kNoOp)) {
+    GraphProtoSyncNeeded(true);
+  }
+
+  return *node;
+}
+
 
 bool Graph::RemoveNode(NodeIndex p_index) {
   auto node = GetNode(p_index);

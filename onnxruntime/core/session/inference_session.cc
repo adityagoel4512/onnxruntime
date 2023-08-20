@@ -721,7 +721,7 @@ common::Status InferenceSession::LoadWithLoader(std::function<common::Status(std
       return common::Status(common::ONNXRUNTIME, common::MODEL_LOADED, "This session already contains a loaded model.");
     }
 
-    std::shared_ptr<onnxruntime::Model> p_tmp_model;
+    auto p_tmp_model = std::make_shared<onnxruntime::Model>();
     status = loader(p_tmp_model);
     ORT_RETURN_IF_ERROR_SESSIONID_(status);
 

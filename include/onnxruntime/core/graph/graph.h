@@ -574,6 +574,16 @@ class Node {
             const std::vector<NodeArg*>& output_args,
             const NodeAttributes* attributes,
             const std::string& domain);
+
+  void Init(const std::string& name,
+            const std::string& op_type,
+            const std::string& description,
+            const std::vector<NodeArg*>& input_args,
+            const std::vector<NodeArg*>& output_args,
+            const NodeAttributes& attributes,
+            const std::string& domain);
+
+  void Init(const ONNX_NAMESPACE::NodeProto& node_proto, const ArgNameToTypeMap& name_to_type_map, const std::vector<NodeArg*>& input_args, const std::vector<NodeArg*>& output_args);
 #endif
 
 #if !defined(ORT_MINIMAL_BUILD) || defined(ORT_EXTENDED_MINIMAL_BUILD)
@@ -933,6 +943,14 @@ class Graph {
                 gsl::span<NodeArg* const> input_args,
                 gsl::span<NodeArg* const> output_args,
                 const NodeAttributes* attributes = nullptr,
+                const std::string& domain = kOnnxDomain);
+
+  Node& AddNode(const std::string& name,
+                const std::string& op_type,
+                const std::string& description,
+                gsl::span<NodeArg* const> input_args,
+                gsl::span<NodeArg* const> output_args,
+                const NodeAttributes& attributes,
                 const std::string& domain = kOnnxDomain);
 
   Node& AddNode(const std::string& name,

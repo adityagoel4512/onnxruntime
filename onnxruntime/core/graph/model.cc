@@ -695,8 +695,12 @@ Status Model::Load(int fd, const PathString& model_path, std::shared_ptr<Model>&
                    const ModelOptions& options) {
   ModelProto model_proto;
 
+  // Load model_proto allocs memory here
   ORT_RETURN_IF_ERROR(Load(fd, model_proto));
 
+  // Constructing the model allocs memory again, inside Model constructor, in turn inside the Graph dynamic constructor
+  // in turn this happens in AddNode for the label encoder
+  // in turn this happens in node->Initå
   p_model = std::make_shared<Model>(std::move(model_proto), model_path, local_registries, logger, options);
 
   Graph::ResolveOptions resolve_options;
