@@ -66,6 +66,7 @@ enum MissingTrack : uint8_t {
 
 template <typename T>
 struct TreeNodeElement {
+  uint8_t flags; // 1 byte
   int feature_id; // 4 bytes
 
   // Stores the node threshold or the weights if the tree has one target.
@@ -89,7 +90,6 @@ struct TreeNodeElement {
   // `this + falsenode_inc_or_n_weights` is the false node.
   // A node cannot point to itself.
   int32_t falsenode_inc_or_n_weights; // 4 bytes
-  uint8_t flags; // 4 bytes
 
   inline NODE_MODE mode() const { return NODE_MODE(flags); }
   inline bool is_not_leaf() const { return flags ^ NODE_MODE::LEAF; }
