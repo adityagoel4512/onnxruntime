@@ -707,39 +707,41 @@ TreeEnsembleCommon<InputType, ThresholdType, OutputType>::ProcessTreeNodeLeave(
   InputType val;
   if (same_mode_) {
     switch (root->mode()) {
-      case NODE_MODE::BRANCH_LEQ:
-        if (has_missing_tracks_) {
-          while (root->is_not_leaf()) {
-            val = x_data[root->feature_id];
-            root += (val <= root->value_or_unique_weight ||
-                     (root->is_missing_track_true() && _isnan_(val)))
-                        ? root->truenode_inc_or_first_weight
-                        : root->falsenode_inc_or_n_weights;
-          }
-        } else {
-          while (root->is_not_leaf()) {
-            val = x_data[root->feature_id];
-            root += val <= root->value_or_unique_weight ? root->truenode_inc_or_first_weight : root->falsenode_inc_or_n_weights;
-          }
-        }
-        break;
+      // case NODE_MODE::BRANCH_LEQ:
+      //   if (has_missing_tracks_) {
+      //     while (root->is_not_leaf()) {
+      //       val = x_data[root->feature_id];
+      //       root += (val <= root->value_or_unique_weight ||
+      //                (root->is_missing_track_true() && _isnan_(val)))
+      //                   ? root->truenode_inc_or_first_weight
+      //                   : root->falsenode_inc_or_n_weights;
+      //     }
+      //   } else {
+      //     while (root->is_not_leaf()) {
+      //       val = x_data[root->feature_id];
+      //       root += val <= root->value_or_unique_weight ? root->truenode_inc_or_first_weight : root->falsenode_inc_or_n_weights;
+      //     }
+      //   }
+      //   break;
       case NODE_MODE::BRANCH_LT:
         TREE_FIND_VALUE(<)
         break;
-      case NODE_MODE::BRANCH_GTE:
-        TREE_FIND_VALUE(>=)
-        break;
+      // case NODE_MODE::BRANCH_GTE:
+      //   TREE_FIND_VALUE(>=)
+      //   break;
       case NODE_MODE::BRANCH_GT:
         TREE_FIND_VALUE(>)
         break;
       case NODE_MODE::BRANCH_EQ:
         TREE_FIND_VALUE(==)
         break;
-      case NODE_MODE::BRANCH_NEQ:
-        TREE_FIND_VALUE(!=)
-        break;
+      // case NODE_MODE::BRANCH_NEQ:
+      //   TREE_FIND_VALUE(!=)
+      //   break;
       case NODE_MODE::LEAF:
         break;
+      default:
+        ORT_THROW("Unknown node mode in TreeEnsembleClassifier. NODE_MODE: ", root->mode());
     }
   } else {  // Different rules to compare to node thresholds.
   InputType val;
