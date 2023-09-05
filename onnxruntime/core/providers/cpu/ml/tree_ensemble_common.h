@@ -709,32 +709,32 @@ TreeEnsembleCommon<InputType, ThresholdType, OutputType>::ProcessTreeNodeLeave(
         threshold = root->value_or_unique_weight;
         switch (root->mode()) {
           case NODE_MODE::BRANCH_LEQ:
-            root += val <= threshold || (root->is_missing_track_true() && _isnan_(val))
+            root += val <= threshold
                         ? root->truenode_inc_or_first_weight
                         : root->falsenode_inc_or_n_weights;
             break;
           case NODE_MODE::BRANCH_LT:
-            root += val < threshold || (root->is_missing_track_true() && _isnan_(val))
+            root += val < threshold
                         ? root->truenode_inc_or_first_weight
                         : root->falsenode_inc_or_n_weights;
             break;
           case NODE_MODE::BRANCH_GTE:
-            root += val >= threshold || (root->is_missing_track_true() && _isnan_(val))
+            root += val >= threshold
                         ? root->truenode_inc_or_first_weight
                         : root->falsenode_inc_or_n_weights;
             break;
           case NODE_MODE::BRANCH_GT:
-            root += val > threshold || (root->is_missing_track_true() && _isnan_(val))
+            root += val > threshold
                         ? root->truenode_inc_or_first_weight
                         : root->falsenode_inc_or_n_weights;
             break;
           case NODE_MODE::BRANCH_EQ:
-            root += val == threshold || (root->is_missing_track_true() && _isnan_(val))
+            root += val == threshold
                         ? root->truenode_inc_or_first_weight
                         : root->falsenode_inc_or_n_weights;
             break;
           case NODE_MODE::BRANCH_NEQ:
-            root += val != threshold || (root->is_missing_track_true() && _isnan_(val))
+            root += val != threshold
                         ? root->truenode_inc_or_first_weight
                         : root->falsenode_inc_or_n_weights;
             break;
