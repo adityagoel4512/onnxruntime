@@ -792,11 +792,7 @@ TreeEnsembleCommon<InputType, ThresholdType, OutputType>::ProcessTreeNodeLeave(
       case NODE_MODE::LEAF:
           return root;
       }
-      if (cond) {
-          root += root->truenode_inc_or_first_weight;
-      } else {
-          root += root->falsenode_inc_or_n_weights;
-      }
+      root += cond ? root->truenode_inc_or_first_weight : root->falsenode_inc_or_n_weights;
       // root += cond*(root->truenode_inc_or_first_weight) + (!cond)*(root->falsenode_inc_or_n_weights);
   }
   // }
