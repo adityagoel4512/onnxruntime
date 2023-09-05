@@ -729,6 +729,7 @@ TreeEnsembleCommon<InputType, ThresholdType, OutputType>::ProcessTreeNodeLeave(
     TreeNodeElement<ThresholdType>* root, const InputType* x_data) const {
   if (same_mode_) {
     ORT_THROW("Same mode is not supported yet.");
+    InputType val;
     switch (root->mode()) {
       case NODE_MODE::BRANCH_LEQ:
         if (has_missing_tracks_) {
@@ -767,9 +768,10 @@ TreeEnsembleCommon<InputType, ThresholdType, OutputType>::ProcessTreeNodeLeave(
         ORT_THROW("Unknown node mode in TreeEnsembleClassifier. NODE_MODE: ", root->mode());
     }
   } else {  // Different rules to compare to node thresholds.
+  auto mode{root->mode()};
   while (1) {
       bool cond;
-      switch (root->mode()) {
+      switch (mode) {
       case NODE_MODE::BRANCH_LEQ:
           cond = x_data[root->feature_id] <= root->value_or_unique_weight;
           break;
@@ -792,6 +794,10 @@ TreeEnsembleCommon<InputType, ThresholdType, OutputType>::ProcessTreeNodeLeave(
           return root;
       }
       root += cond*(root->truenode_inc_or_first_weight) + (!cond)*(root->falsenode_inc_or_n_weights);
+      mode = root->mode();
+      if (mode == NODE_MODE::LEAF) {
+          return root;
+      }
   }
   }
   return root;
