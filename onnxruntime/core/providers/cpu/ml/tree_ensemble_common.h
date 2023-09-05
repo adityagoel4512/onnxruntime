@@ -771,7 +771,7 @@ TreeEnsembleCommon<InputType, ThresholdType, OutputType>::ProcessTreeNodeLeave(
       case NODE_MODE::LEAF:
           return root;
       default:
-          ORT_THROW("Unknown node mode in TreeEnsembleClassifier.");
+          ORT_THROW("Unknown node mode in TreeEnsembleClassifier. NODE_MODE: ", root->mode());
       }
       root += cond*(root->truenode_inc_or_first_weight) + (1-cond)*(root->falsenode_inc_or_n_weights);
   }
