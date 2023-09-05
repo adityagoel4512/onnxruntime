@@ -67,6 +67,9 @@ enum MissingTrack : uint8_t {
 template <typename T>
 struct TreeNodeElement {
   uint8_t flags; // 1 byte
+  uint8_t p1;
+  uint8_t p2;
+  uint8_t p3;
   int feature_id; // 4 bytes
 
   // Stores the node threshold or the weights if the tree has one target.
