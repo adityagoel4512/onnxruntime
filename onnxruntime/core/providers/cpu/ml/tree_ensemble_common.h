@@ -375,8 +375,7 @@ Status TreeEnsembleCommon<InputType, ThresholdType, OutputType>::Init(
       } else {
         nodes_[i].flags |= static_cast<uint8_t>(MissingTrack::kTrue);
       }
-      continue;
-    } else if (nodes_[i].flags == NODE_MODE::BRANCH_NEQ) {
+    } else if (nodes_[i].mode() == NODE_MODE::BRANCH_NEQ) {
        // flip child node ids, switch mode, and finally is_missing_track_true flag should be inverted also
       auto tmp = nodes_[i].truenode_inc_or_first_weight;
       nodes_[i].truenode_inc_or_first_weight = nodes_[i].falsenode_inc_or_n_weights;
@@ -388,7 +387,7 @@ Status TreeEnsembleCommon<InputType, ThresholdType, OutputType>::Init(
       } else {
         nodes_[i].flags |= static_cast<uint8_t>(MissingTrack::kTrue);
       }
-    } else if (nodes_[i].flags == NODE_MODE::BRANCH_LEQ) {
+    } else if (nodes_[i].mode() == NODE_MODE::BRANCH_LEQ) {
        // flip child node ids, switch mode, and finally is_missing_track_true flag should be inverted also
       auto tmp = nodes_[i].truenode_inc_or_first_weight;
       nodes_[i].truenode_inc_or_first_weight = nodes_[i].falsenode_inc_or_n_weights;
