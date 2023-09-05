@@ -734,7 +734,7 @@ TreeEnsembleCommon<InputType, ThresholdType, OutputType>::ProcessTreeNodeLeave(
                         : root->falsenode_inc_or_n_weights;
             break;
           case NODE_MODE::BRANCH_NEQ:
-            root += val != threshold
+            root += val != threshold && !_isnan_(val)
                         ? root->truenode_inc_or_first_weight
                         : root->falsenode_inc_or_n_weights;
             break;
