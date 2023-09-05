@@ -707,72 +707,33 @@ TreeEnsembleCommon<InputType, ThresholdType, OutputType>::ProcessTreeNodeLeave(
   while (1) {
       val = x_data[root->feature_id];
       threshold = root->value_or_unique_weight;
-      int32_t delta;
-      uint32_t cond{0};
+      int32_t cond{0};
       switch (root->mode()) {
       case NODE_MODE::BRANCH_LEQ:
-          cond = static_cast<uint32_t>(val <= threshold || (root->is_missing_track_true() && _isnan_(val)));
+          cond = static_cast<int32_t>(val <= threshold || (root->is_missing_track_true() && _isnan_(val)) ? 1 : 0);
           break;
       case NODE_MODE::BRANCH_LT:
-          cond = static_cast<uint32_t>(val < threshold || (root->is_missing_track_true() && _isnan_(val)));
+          cond = static_cast<int32_t>(val < threshold || (root->is_missing_track_true() && _isnan_(val)) ? 1 : 0);
           break;
       case NODE_MODE::BRANCH_GTE:
-          cond = static_cast<uint32_t>(val >= threshold || (root->is_missing_track_true() && _isnan_(val)));
+          cond = static_cast<int32_t>(val >= threshold || (root->is_missing_track_true() && _isnan_(val)) ? 1 : 0);
           break;
       case NODE_MODE::BRANCH_GT:
-          cond = static_cast<uint32_t>(val > threshold || (root->is_missing_track_true() && _isnan_(val)));
+          cond = static_cast<int32_t>(val > threshold || (root->is_missing_track_true() && _isnan_(val)) ? 1 : 0);
           break;
       case NODE_MODE::BRANCH_EQ:
-          cond = static_cast<uint32_t>(val == threshold || (root->is_missing_track_true() && _isnan_(val)));
+          cond = static_cast<int32_t>(val == threshold || (root->is_missing_track_true() && _isnan_(val)) ? 1 : 0);
           break;
       case NODE_MODE::BRANCH_NEQ:
-          cond = static_cast<uint32_t>(val != threshold || (root->is_missing_track_true() && _isnan_(val)));
+          cond = static_cast<int32_t>(val != threshold || (root->is_missing_track_true() && _isnan_(val)) ? 1 : 0);
           break;
       case NODE_MODE::LEAF:
           return root;
       }
-      root += cond*root->truenode_inc_or_first_weight + (1-cond)*root->falsenode_inc_or_n_weights;
+      root += cond*(root->truenode_inc_or_first_weight) + (1-cond)*(root->falsenode_inc_or_n_weights);
   }
   }
   return root;
-}
-
-template<typename ThresholdType>
-inline uint32_t get_delta(TreeNodeElement<ThresholdType>* root) {
-  auto val = x_data[root->feature_id];
-  switch (root->mode()) {
-    case NODE_MODE::BRANCH_LEQ:
-      return val <= root->value_or_unique_weight
-                  ? root->truenode_inc_or_first_weight
-                  : root->falsenode_inc_or_n_weights;
-    case NODE_MODE::BRANCH_LT:
-      return val < root->value_or_unique_weight
-                  ? root->truenode_inc_or_first_weight
-                  : root->falsenode_inc_or_n_weights;
-      break;
-    case NODE_MODE::BRANCH_GTE:
-      root += val >= root->value_or_unique_weight
-                  ? root->truenode_inc_or_first_weight
-                  : root->falsenode_inc_or_n_weights;
-      break;
-    case NODE_MODE::BRANCH_GT:
-      root += val > root->value_or_unique_weight
-                  ? root->truenode_inc_or_first_weight
-                  : root->falsenode_inc_or_n_weights;
-      break;
-    case NODE_MODE::BRANCH_EQ:
-      root += val == root->value_or_unique_weight
-                  ? root->truenode_inc_or_first_weight
-                  : root->falsenode_inc_or_n_weights;
-      break;
-    case NODE_MODE::BRANCH_NEQ:
-      root += val != root->value_or_unique_weight
-                  ? root->truenode_inc_or_first_weight
-                  : root->falsenode_inc_or_n_weights;
-      break;
-    case NODE_MODE::LEAF:
-      return root;
-  }
 }
 
 // TI: input type
