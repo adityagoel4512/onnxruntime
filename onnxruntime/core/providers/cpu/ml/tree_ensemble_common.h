@@ -711,22 +711,22 @@ TreeEnsembleCommon<InputType, ThresholdType, OutputType>::ProcessTreeNodeLeave(
       uint32_t cond{0};
       switch (root->mode()) {
       case NODE_MODE::BRANCH_LEQ:
-          cond = val < threshold || (root->is_missing_track_true() && _isnan_(val));
+          cond = static_cast<uint32_t>(val <= threshold || (root->is_missing_track_true() && _isnan_(val)));
           break;
       case NODE_MODE::BRANCH_LT:
-          cond = val < threshold || (root->is_missing_track_true() && _isnan_(val));
+          cond = static_cast<uint32_t>(val < threshold || (root->is_missing_track_true() && _isnan_(val)));
           break;
       case NODE_MODE::BRANCH_GTE:
-          cond = val < threshold || (root->is_missing_track_true() && _isnan_(val));
+          cond = static_cast<uint32_t>(val >= threshold || (root->is_missing_track_true() && _isnan_(val)));
           break;
       case NODE_MODE::BRANCH_GT:
-          cond = val < threshold || (root->is_missing_track_true() && _isnan_(val));
+          cond = static_cast<uint32_t>(val > threshold || (root->is_missing_track_true() && _isnan_(val)));
           break;
       case NODE_MODE::BRANCH_EQ:
-          cond = val < threshold || (root->is_missing_track_true() && _isnan_(val));
+          cond = static_cast<uint32_t>(val == threshold || (root->is_missing_track_true() && _isnan_(val)));
           break;
       case NODE_MODE::BRANCH_NEQ:
-          cond = val < threshold || (root->is_missing_track_true() && _isnan_(val));
+          cond = static_cast<uint32_t>(val != threshold || (root->is_missing_track_true() && _isnan_(val)));
           break;
       case NODE_MODE::LEAF:
           return root;
