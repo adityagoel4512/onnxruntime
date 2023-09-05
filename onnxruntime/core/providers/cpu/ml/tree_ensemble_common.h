@@ -363,43 +363,60 @@ Status TreeEnsembleCommon<InputType, ThresholdType, OutputType>::Init(
   }
 
   for (i = 0; i < nodes_.size(); ++i) {
-    if (nodes_[i].mode() == NODE_MODE::BRANCH_GTE) {
-       // flip child node ids, switch mode, and finally is_missing_track_true flag should be inverted also
-      auto tmp = nodes_[i].truenode_inc_or_first_weight;
-      nodes_[i].truenode_inc_or_first_weight = nodes_[i].falsenode_inc_or_n_weights;
-      nodes_[i].falsenode_inc_or_n_weights = tmp;
-      nodes_[i].flags ^= NODE_MODE::BRANCH_GTE;
-      nodes_[i].flags |= NODE_MODE::BRANCH_LT;
-      if (nodes_[i].is_missing_track_true()) {
-        nodes_[i].flags ^= static_cast<uint8_t>(MissingTrack::kTrue);
-      } else {
-        nodes_[i].flags |= static_cast<uint8_t>(MissingTrack::kTrue);
-      }
-    } else if (nodes_[i].mode() == NODE_MODE::BRANCH_NEQ) {
-       // flip child node ids, switch mode, and finally is_missing_track_true flag should be inverted also
-      auto tmp = nodes_[i].truenode_inc_or_first_weight;
-      nodes_[i].truenode_inc_or_first_weight = nodes_[i].falsenode_inc_or_n_weights;
-      nodes_[i].falsenode_inc_or_n_weights = tmp;
-      nodes_[i].flags ^= NODE_MODE::BRANCH_NEQ;
-      nodes_[i].flags |= NODE_MODE::BRANCH_EQ;
-      if (nodes_[i].is_missing_track_true()) {
-        nodes_[i].flags ^= static_cast<uint8_t>(MissingTrack::kTrue);
-      } else {
-        nodes_[i].flags |= static_cast<uint8_t>(MissingTrack::kTrue);
-      }
-    } else if (nodes_[i].mode() == NODE_MODE::BRANCH_LEQ) {
-       // flip child node ids, switch mode, and finally is_missing_track_true flag should be inverted also
-      auto tmp = nodes_[i].truenode_inc_or_first_weight;
-      nodes_[i].truenode_inc_or_first_weight = nodes_[i].falsenode_inc_or_n_weights;
-      nodes_[i].falsenode_inc_or_n_weights = tmp;
-      nodes_[i].flags ^= NODE_MODE::BRANCH_LEQ;
-      nodes_[i].flags |= NODE_MODE::BRANCH_GT;
-      if (nodes_[i].is_missing_track_true()) {
-        nodes_[i].flags ^= static_cast<uint8_t>(MissingTrack::kTrue);
-      } else {
-        nodes_[i].flags |= static_cast<uint8_t>(MissingTrack::kTrue);
+    if (nodes_[i].is_missing_track_true() && nodes_[i].mode() != NODE_MODE::BRANCH_NEQ && nodes_[i].mode() != NODE_MODE::BRANCH_EQ) {
+      nodes_[i].flags ^= static_cast<uint8_t>(MissingTrack::kTrue);
+      nodes_[i].flags |= static_cast<uint8_t>(MissingTrack::kFalse);
+      if (nodes_[i].mode() == NODE_MODE::BRANCH_LT) {
+        nodes_[i].flags ^= NODE_MODE::BRANCH_LT;
+        nodes_[i].flags |= NODE_MODE::BRANCH_GTE;
+      } else if (nodes_[i].mode() == NODE_MODE::BRANCH_GT) {
+        nodes_[i].flags ^= NODE_MODE::BRANCH_GT;
+        nodes_[i].flags |= NODE_MODE::BRANCH_LEQ;
+      } else if (nodes_[i].mode() == NODE_MODE::BRANCH_LEQ) {
+        nodes_[i].flags ^= NODE_MODE::BRANCH_LEQ;
+        nodes_[i].flags |= NODE_MODE::BRANCH_GT;
+      } else if (nodes_[i].mode() == NODE_MODE::BRANCH_GTE) {
+        nodes_[i].flags ^= NODE_MODE::BRANCH_GTE;
+        nodes_[i].flags |= NODE_MODE::BRANCH_LT;
       }
     }
+    // if (nodes_[i].mode() == NODE_MODE::BRANCH_GTE) {
+    //    // flip child node ids, switch mode, and finally is_missing_track_true flag should be inverted also
+    //   auto tmp = nodes_[i].truenode_inc_or_first_weight;
+    //   nodes_[i].truenode_inc_or_first_weight = nodes_[i].falsenode_inc_or_n_weights;
+    //   nodes_[i].falsenode_inc_or_n_weights = tmp;
+    //   nodes_[i].flags ^= NODE_MODE::BRANCH_GTE;
+    //   nodes_[i].flags |= NODE_MODE::BRANCH_LT;
+    //   if (nodes_[i].is_missing_track_true()) {
+    //     nodes_[i].flags ^= static_cast<uint8_t>(MissingTrack::kTrue);
+    //   } else {
+    //     nodes_[i].flags |= static_cast<uint8_t>(MissingTrack::kTrue);
+    //   }
+    // } else if (nodes_[i].mode() == NODE_MODE::BRANCH_NEQ) {
+    //    // flip child node ids, switch mode, and finally is_missing_track_true flag should be inverted also
+    //   auto tmp = nodes_[i].truenode_inc_or_first_weight;
+    //   nodes_[i].truenode_inc_or_first_weight = nodes_[i].falsenode_inc_or_n_weights;
+    //   nodes_[i].falsenode_inc_or_n_weights = tmp;
+    //   nodes_[i].flags ^= NODE_MODE::BRANCH_NEQ;
+    //   nodes_[i].flags |= NODE_MODE::BRANCH_EQ;
+    //   if (nodes_[i].is_missing_track_true()) {
+    //     nodes_[i].flags ^= static_cast<uint8_t>(MissingTrack::kTrue);
+    //   } else {
+    //     nodes_[i].flags |= static_cast<uint8_t>(MissingTrack::kTrue);
+    //   }
+    // } else if (nodes_[i].mode() == NODE_MODE::BRANCH_LEQ) {
+    //    // flip child node ids, switch mode, and finally is_missing_track_true flag should be inverted also
+    //   auto tmp = nodes_[i].truenode_inc_or_first_weight;
+    //   nodes_[i].truenode_inc_or_first_weight = nodes_[i].falsenode_inc_or_n_weights;
+    //   nodes_[i].falsenode_inc_or_n_weights = tmp;
+    //   nodes_[i].flags ^= NODE_MODE::BRANCH_LEQ;
+    //   nodes_[i].flags |= NODE_MODE::BRANCH_GT;
+    //   if (nodes_[i].is_missing_track_true()) {
+    //     nodes_[i].flags ^= static_cast<uint8_t>(MissingTrack::kTrue);
+    //   } else {
+    //     nodes_[i].flags |= static_cast<uint8_t>(MissingTrack::kTrue);
+    //   }
+    // }
   }
   return Status::OK();
 }
@@ -706,23 +723,24 @@ TreeEnsembleCommon<InputType, ThresholdType, OutputType>::ProcessTreeNodeLeave(
     TreeNodeElement<ThresholdType>* root, const InputType* x_data) const {
   InputType val;
   if (same_mode_) {
+    ORT_THROW("Same mode is not supported yet.");
     switch (root->mode()) {
-      // case NODE_MODE::BRANCH_LEQ:
-      //   if (has_missing_tracks_) {
-      //     while (root->is_not_leaf()) {
-      //       val = x_data[root->feature_id];
-      //       root += (val <= root->value_or_unique_weight ||
-      //                (root->is_missing_track_true() && _isnan_(val)))
-      //                   ? root->truenode_inc_or_first_weight
-      //                   : root->falsenode_inc_or_n_weights;
-      //     }
-      //   } else {
-      //     while (root->is_not_leaf()) {
-      //       val = x_data[root->feature_id];
-      //       root += val <= root->value_or_unique_weight ? root->truenode_inc_or_first_weight : root->falsenode_inc_or_n_weights;
-      //     }
-      //   }
-      //   break;
+      case NODE_MODE::BRANCH_LEQ:
+        if (has_missing_tracks_) {
+          while (root->is_not_leaf()) {
+            val = x_data[root->feature_id];
+            root += (val <= root->value_or_unique_weight ||
+                     (root->is_missing_track_true() && _isnan_(val)))
+                        ? root->truenode_inc_or_first_weight
+                        : root->falsenode_inc_or_n_weights;
+          }
+        } else {
+          while (root->is_not_leaf()) {
+            val = x_data[root->feature_id];
+            root += val <= root->value_or_unique_weight ? root->truenode_inc_or_first_weight : root->falsenode_inc_or_n_weights;
+          }
+        }
+        break;
       case NODE_MODE::BRANCH_LT:
         TREE_FIND_VALUE(<)
         break;
@@ -746,29 +764,30 @@ TreeEnsembleCommon<InputType, ThresholdType, OutputType>::ProcessTreeNodeLeave(
   } else {  // Different rules to compare to node thresholds.
   InputType val;
   ThresholdType threshold;
+
   while (1) {
       val = x_data[root->feature_id];
       threshold = root->value_or_unique_weight;
-      int cond{0};
+      int cond;
       switch (root->mode()) {
-      // case NODE_MODE::BRANCH_LEQ:
-      //     cond = int(val <= threshold || (root->is_missing_track_true() && _isnan_(val)));
-      //     break;
-      case NODE_MODE::BRANCH_LT:
-          cond = int(val < threshold || (root->is_missing_track_true() && _isnan_(val)));
+      case NODE_MODE::BRANCH_LEQ:
+          cond = int(val <= threshold);
           break;
-      // case NODE_MODE::BRANCH_GTE:
-      //     cond = int(val >= threshold || (root->is_missing_track_true() && _isnan_(val)));
-      //     break;
+      case NODE_MODE::BRANCH_LT:
+          cond = int(val < threshold);
+          break;
+      case NODE_MODE::BRANCH_GTE:
+          cond = int(val >= threshold);
+          break;
       case NODE_MODE::BRANCH_GT:
-          cond = int(val > threshold || (root->is_missing_track_true() && _isnan_(val)));
+          cond = int(val > threshold);
           break;
       case NODE_MODE::BRANCH_EQ:
           cond = int(val == threshold || (root->is_missing_track_true() && _isnan_(val)));
           break;
-      // case NODE_MODE::BRANCH_NEQ:
-      //     cond = int(val != threshold || (root->is_missing_track_true() && _isnan_(val)));
-      //     break;
+      case NODE_MODE::BRANCH_NEQ:
+          cond = int(val != threshold || (root->is_missing_track_true() && _isnan_(val)));
+          break;
       case NODE_MODE::LEAF:
           return root;
       default:
