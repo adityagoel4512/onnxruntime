@@ -727,7 +727,6 @@ template <typename InputType, typename ThresholdType, typename OutputType>
 TreeNodeElement<ThresholdType>*
 TreeEnsembleCommon<InputType, ThresholdType, OutputType>::ProcessTreeNodeLeave(
     TreeNodeElement<ThresholdType>* root, const InputType* x_data) const {
-  InputType val;
   if (same_mode_) {
     ORT_THROW("Same mode is not supported yet.");
     switch (root->mode()) {
@@ -768,38 +767,31 @@ TreeEnsembleCommon<InputType, ThresholdType, OutputType>::ProcessTreeNodeLeave(
         ORT_THROW("Unknown node mode in TreeEnsembleClassifier. NODE_MODE: ", root->mode());
     }
   } else {  // Different rules to compare to node thresholds.
-  InputType val;
-  ThresholdType threshold;
-
   while (1) {
-      val = x_data[root->feature_id];
-      threshold = root->value_or_unique_weight;
-      int cond;
+      bool cond;
       switch (root->mode()) {
       case NODE_MODE::BRANCH_LEQ:
-          cond = int(val <= threshold);
+          cond = x_data[root->feature_id] <= root->value_or_unique_weight;
           break;
       case NODE_MODE::BRANCH_LT:
-          cond = int(val < threshold);
+          cond = x_data[root->feature_id] < root->value_or_unique_weight;
           break;
       case NODE_MODE::BRANCH_GTE:
-          cond = int(val >= threshold);
+          cond = x_data[root->feature_id] >= root->value_or_unique_weight;
           break;
       case NODE_MODE::BRANCH_GT:
-          cond = int(val > threshold);
+          cond = x_data[root->feature_id] > root->value_or_unique_weight;
           break;
       case NODE_MODE::BRANCH_EQ:
-          cond = int(val == threshold);
+          cond = x_data[root->feature_id] == root->value_or_unique_weight;
           break;
       case NODE_MODE::BRANCH_NEQ:
-          cond = int(val != threshold && !_isnan_(val));
+          cond = x_data[root->feature_id] != root->value_or_unique_weight && !_isnan_(x_data[root->feature_id]);
           break;
       case NODE_MODE::LEAF:
           return root;
-      default:
-          ORT_THROW("Unknown node mode in TreeEnsembleClassifier. NODE_MODE: ", root->mode());
       }
-      root += cond*(root->truenode_inc_or_first_weight) + (1-cond)*(root->falsenode_inc_or_n_weights);
+      root += cond*(root->truenode_inc_or_first_weight) + (!cond)*(root->falsenode_inc_or_n_weights);
   }
   }
   return root;
