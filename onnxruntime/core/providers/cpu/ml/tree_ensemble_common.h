@@ -363,7 +363,7 @@ Status TreeEnsembleCommon<InputType, ThresholdType, OutputType>::Init(
   }
 
   for (i = 0; i < nodes_.size(); ++i) {
-    if (nodes_[i].is_missing_track_true()) {
+    if (nodes_[i].flags & static_cast<uint8_t>(MissingTrack::kTrue)) {
       nodes_[i].flags ^= static_cast<uint8_t>(MissingTrack::kTrue);
       nodes_[i].flags |= static_cast<uint8_t>(MissingTrack::kFalse);
       if (nodes_[i].mode() == NODE_MODE::BRANCH_LT) {
@@ -768,10 +768,9 @@ TreeEnsembleCommon<InputType, ThresholdType, OutputType>::ProcessTreeNodeLeave(
   //       ORT_THROW("Unknown node mode in TreeEnsembleClassifier. NODE_MODE: ", root->mode());
   //   }
   // } else {  // Different rules to compare to node thresholds.
-  auto mode{root->mode()};
   bool cond;
   while (1) {
-      switch (mode) {
+      switch (root->flags) {
       case NODE_MODE::BRANCH_LEQ:
           cond = x_data[root->feature_id] <= root->value_or_unique_weight;
           break;
@@ -793,11 +792,15 @@ TreeEnsembleCommon<InputType, ThresholdType, OutputType>::ProcessTreeNodeLeave(
       case NODE_MODE::LEAF:
           return root;
       }
-      root += cond*(root->truenode_inc_or_first_weight) + (!cond)*(root->falsenode_inc_or_n_weights);
-      mode = root->mode();
+      if (cond) {
+          root += root->truenode_inc_or_first_weight;
+      } else {
+          root += root->falsenode_inc_or_n_weights;
+      }
+      // root += cond*(root->truenode_inc_or_first_weight) + (!cond)*(root->falsenode_inc_or_n_weights);
   }
   // }
-  return root;
+  return nullptr;
 }
 
 // TI: input type

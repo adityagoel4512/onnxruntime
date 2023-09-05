@@ -91,7 +91,7 @@ struct TreeNodeElement {
   int32_t falsenode_inc_or_n_weights; // 4 bytes
   uint8_t flags; // 4 bytes
 
-  inline NODE_MODE mode() const { return NODE_MODE(flags & 0xF); }
+  inline NODE_MODE mode() const { return NODE_MODE(flags); }
   inline bool is_not_leaf() const { return flags ^ NODE_MODE::LEAF; }
   inline bool is_missing_track_true() const { return flags & MissingTrack::kTrue; }
 };
