@@ -66,10 +66,10 @@ enum MissingTrack : uint8_t {
 
 template <typename T>
 struct TreeNodeElement {
-  int feature_id;
+  int feature_id; // 4 bytes
 
   // Stores the node threshold or the weights if the tree has one target.
-  T value_or_unique_weight;
+  T value_or_unique_weight; // f32 = 4 bytes
 
   // onnx specification says hitrates is used to store information about the node,
   // but this information is not used for inference.
@@ -83,16 +83,16 @@ struct TreeNodeElement {
   // This implementation assumes a tree has less than 2^31 nodes,
   // and the total number of leave in the set of trees is below 2^31.
   // A node cannot point to itself.
-  int32_t truenode_inc_or_first_weight;
+  int32_t truenode_inc_or_first_weight; // 4 bytes
   // In case of a leaf, the following attribute indicates the number of weights
   // in array `TreeEnsembleCommon::weights_`. If not a leaf, it indicates
   // `this + falsenode_inc_or_n_weights` is the false node.
   // A node cannot point to itself.
-  int32_t falsenode_inc_or_n_weights;
-  uint8_t flags;
+  int32_t falsenode_inc_or_n_weights; // 4 bytes
+  uint8_t flags; // 4 bytes
 
   inline NODE_MODE mode() const { return NODE_MODE(flags & 0xF); }
-  inline bool is_not_leaf() const { return !(flags & NODE_MODE::LEAF); }
+  inline bool is_not_leaf() const { return flags ^ NODE_MODE::LEAF; }
   inline bool is_missing_track_true() const { return flags & MissingTrack::kTrue; }
 };
 
