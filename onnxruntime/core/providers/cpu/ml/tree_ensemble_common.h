@@ -707,25 +707,25 @@ TreeEnsembleCommon<InputType, ThresholdType, OutputType>::ProcessTreeNodeLeave(
   while (1) {
       val = x_data[root->feature_id];
       threshold = root->value_or_unique_weight;
-      int32_t cond{0};
+      int cond{0};
       switch (root->mode()) {
       case NODE_MODE::BRANCH_LEQ:
-          cond = static_cast<int32_t>(val <= threshold || (root->is_missing_track_true() && _isnan_(val)) ? 1 : 0);
+          cond = int(val <= threshold || (root->is_missing_track_true() && _isnan_(val)));
           break;
       case NODE_MODE::BRANCH_LT:
-          cond = static_cast<int32_t>(val < threshold || (root->is_missing_track_true() && _isnan_(val)) ? 1 : 0);
+          cond = int(val < threshold || (root->is_missing_track_true() && _isnan_(val)));
           break;
       case NODE_MODE::BRANCH_GTE:
-          cond = static_cast<int32_t>(val >= threshold || (root->is_missing_track_true() && _isnan_(val)) ? 1 : 0);
+          cond = int(val >= threshold || (root->is_missing_track_true() && _isnan_(val)));
           break;
       case NODE_MODE::BRANCH_GT:
-          cond = static_cast<int32_t>(val > threshold || (root->is_missing_track_true() && _isnan_(val)) ? 1 : 0);
+          cond = int(val > threshold || (root->is_missing_track_true() && _isnan_(val)));
           break;
       case NODE_MODE::BRANCH_EQ:
-          cond = static_cast<int32_t>(val == threshold || (root->is_missing_track_true() && _isnan_(val)) ? 1 : 0);
+          cond = int(val == threshold || (root->is_missing_track_true() && _isnan_(val)));
           break;
       case NODE_MODE::BRANCH_NEQ:
-          cond = static_cast<int32_t>(val != threshold || (root->is_missing_track_true() && _isnan_(val)) ? 1 : 0);
+          cond = int(val != threshold || (root->is_missing_track_true() && _isnan_(val)));
           break;
       case NODE_MODE::LEAF:
           return root;
