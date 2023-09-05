@@ -363,7 +363,7 @@ Status TreeEnsembleCommon<InputType, ThresholdType, OutputType>::Init(
   }
 
   for (i = 0; i < nodes_.size(); ++i) {
-    if (nodes_[i].is_missing_track_true() && nodes_[i].mode() != NODE_MODE::BRANCH_NEQ && nodes_[i].mode() != NODE_MODE::BRANCH_EQ) {
+    if (nodes_[i].is_missing_track_true()) {
       nodes_[i].flags ^= static_cast<uint8_t>(MissingTrack::kTrue);
       nodes_[i].flags |= static_cast<uint8_t>(MissingTrack::kFalse);
       if (nodes_[i].mode() == NODE_MODE::BRANCH_LT) {
@@ -378,6 +378,12 @@ Status TreeEnsembleCommon<InputType, ThresholdType, OutputType>::Init(
       } else if (nodes_[i].mode() == NODE_MODE::BRANCH_GTE) {
         nodes_[i].flags ^= NODE_MODE::BRANCH_GTE;
         nodes_[i].flags |= NODE_MODE::BRANCH_LT;
+      } else if (nodes_[i].mode() == NODE_MODE::BRANCH_NEQ) {
+        nodes_[i].flags ^= NODE_MODE::BRANCH_NEQ;
+        nodes_[i].flags |= NODE_MODE::BRANCH_EQ;
+      } else if (nodes_[i].mode() == NODE_MODE::BRANCH_EQ) {
+        nodes_[i].flags ^= NODE_MODE::BRANCH_EQ;
+        nodes_[i].flags |= NODE_MODE::BRANCH_NEQ;
       }
     }
     // if (nodes_[i].mode() == NODE_MODE::BRANCH_GTE) {
@@ -783,10 +789,10 @@ TreeEnsembleCommon<InputType, ThresholdType, OutputType>::ProcessTreeNodeLeave(
           cond = int(val > threshold);
           break;
       case NODE_MODE::BRANCH_EQ:
-          cond = int(val == threshold || (root->is_missing_track_true() && _isnan_(val)));
+          cond = int(val == threshold);
           break;
       case NODE_MODE::BRANCH_NEQ:
-          cond = int(val != threshold || (root->is_missing_track_true() && _isnan_(val)));
+          cond = int(val != threshold && !_isnan_(val));
           break;
       case NODE_MODE::LEAF:
           return root;
