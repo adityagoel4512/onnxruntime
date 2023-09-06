@@ -344,7 +344,7 @@ Status TreeEnsembleCommon<InputType, ThresholdType, OutputType>::Init(
   same_mode_ = true;
   int fpos = -1;
   for (i = 0; i < nodes_.size(); ++i) {
-    if (nodes_[i].flags & static_cast<uint8_t>(MissingTrack::kTrue) && nodes_[i].is_not_leaf()) {
+    if (nodes_[i].flags & static_cast<uint8_t>(MissingTrack::kTrue)) {
       nodes_[i].flags ^= static_cast<uint8_t>(MissingTrack::kTrue);
       nodes_[i].flags |= static_cast<uint8_t>(MissingTrack::kFalse);
       nodes_[i].flags ^= nodes_[i].mode();
