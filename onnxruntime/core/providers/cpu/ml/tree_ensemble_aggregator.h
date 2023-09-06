@@ -96,7 +96,6 @@ struct TreeNodeElement {
 
   inline NODE_MODE mode() const { return NODE_MODE(flags); }
   inline bool is_not_leaf() const { return flags ^ NODE_MODE::LEAF; }
-  inline bool is_missing_track_true() const { return flags & MissingTrack::kTrue; }
 };
 
 template <typename InputType, typename ThresholdType, typename OutputType>
