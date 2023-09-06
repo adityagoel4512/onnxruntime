@@ -344,28 +344,11 @@ Status TreeEnsembleCommon<InputType, ThresholdType, OutputType>::Init(
   same_mode_ = true;
   int fpos = -1;
   for (i = 0; i < nodes_.size(); ++i) {
-    if (nodes_[i].flags & static_cast<uint8_t>(MissingTrack::kTrue)) {
+    if (nodes_[i].flags & static_cast<uint8_t>(MissingTrack::kTrue) && nodes_[i].is_not_leaf()) {
       nodes_[i].flags ^= static_cast<uint8_t>(MissingTrack::kTrue);
       nodes_[i].flags |= static_cast<uint8_t>(MissingTrack::kFalse);
-      if (nodes_[i].mode() == NODE_MODE::BRANCH_LT) {
-        nodes_[i].flags ^= NODE_MODE::BRANCH_LT;
-        nodes_[i].flags |= NODE_MODE::BRANCH_GTE;
-      } else if (nodes_[i].mode() == NODE_MODE::BRANCH_GT) {
-        nodes_[i].flags ^= NODE_MODE::BRANCH_GT;
-        nodes_[i].flags |= NODE_MODE::BRANCH_LEQ;
-      } else if (nodes_[i].mode() == NODE_MODE::BRANCH_LEQ) {
-        nodes_[i].flags ^= NODE_MODE::BRANCH_LEQ;
-        nodes_[i].flags |= NODE_MODE::BRANCH_GT;
-      } else if (nodes_[i].mode() == NODE_MODE::BRANCH_GTE) {
-        nodes_[i].flags ^= NODE_MODE::BRANCH_GTE;
-        nodes_[i].flags |= NODE_MODE::BRANCH_LT;
-      } else if (nodes_[i].mode() == NODE_MODE::BRANCH_NEQ) {
-        nodes_[i].flags ^= NODE_MODE::BRANCH_NEQ;
-        nodes_[i].flags |= NODE_MODE::BRANCH_EQ;
-      } else if (nodes_[i].mode() == NODE_MODE::BRANCH_EQ) {
-        nodes_[i].flags ^= NODE_MODE::BRANCH_EQ;
-        nodes_[i].flags |= NODE_MODE::BRANCH_NEQ;
-      }
+      nodes_[i].flags ^= nodes_[i].mode();
+      nodes_[i].flags |= GetInverseNode(nodes_[i].mode());
     }
     if (fpos == -1) {
       fpos = static_cast<int>(i);
