@@ -349,6 +349,7 @@ Status TreeEnsembleCommon<InputType, ThresholdType, OutputType>::Init(
       nodes_[i].flags |= static_cast<uint8_t>(MissingTrack::kFalse);
       nodes_[i].flags ^= nodes_[i].mode();
       nodes_[i].flags |= GetInverseNode(nodes_[i].mode());
+      std::swap(nodes_[i].truenode_inc_or_first_weight, nodes_[i].falsenode_inc_or_n_weights);
     }
     if (fpos == -1) {
       fpos = static_cast<int>(i);
@@ -667,6 +668,9 @@ TreeEnsembleCommon<InputType, ThresholdType, OutputType>::ProcessTreeNodeLeave(
         TREE_FIND_VALUE(==)
         return root;
       case NODE_MODE::BRANCH_NEQ:
+        TREE_FIND_VALUE(!=)
+        return root;
+      case NODE_MODE::BRANCH_NEQ_FALSE_MISSING:
         while (root->is_not_leaf()) {
           cmp = x_data[root->feature_id] != root->value_or_unique_weight && !_isnan_(x_data[root->feature_id]);
           root += (cmp)*(root->truenode_inc_or_first_weight) + (!cmp)*(root->falsenode_inc_or_n_weights);
@@ -695,6 +699,9 @@ TreeEnsembleCommon<InputType, ThresholdType, OutputType>::ProcessTreeNodeLeave(
             cond = x_data[root->feature_id] == root->value_or_unique_weight;
             break;
         case NODE_MODE::BRANCH_NEQ:
+            cond = x_data[root->feature_id] != root->value_or_unique_weight;
+            break;
+        case NODE_MODE::BRANCH_NEQ_FALSE_MISSING:
             cond = x_data[root->feature_id] != root->value_or_unique_weight && !_isnan_(x_data[root->feature_id]);
             break;
         case NODE_MODE::LEAF:

@@ -27,7 +27,8 @@ enum NODE_MODE : uint8_t {
   BRANCH_GTE = 6,
   BRANCH_GT = 8,
   BRANCH_EQ = 10,
-  BRANCH_NEQ = 12
+  BRANCH_NEQ = 12,
+  BRANCH_NEQ_FALSE_MISSING = 14
 };
 
 static inline NODE_MODE GetInverseNode(const NODE_MODE node_mode) {
@@ -41,11 +42,13 @@ static inline NODE_MODE GetInverseNode(const NODE_MODE node_mode) {
     case NODE_MODE::BRANCH_GT:
       return NODE_MODE::BRANCH_LEQ;
     case NODE_MODE::BRANCH_EQ:
-      return NODE_MODE::BRANCH_NEQ;
+      return NODE_MODE::BRANCH_NEQ_FALSE_MISSING;
     case NODE_MODE::BRANCH_NEQ:
       return NODE_MODE::BRANCH_EQ;
     case NODE_MODE::LEAF:
       return NODE_MODE::LEAF;
+    case NODE_MODE::BRANCH_NEQ_FALSE_MISSING:
+      return NODE_MODE::BRANCH_EQ;
   }
 }
 
