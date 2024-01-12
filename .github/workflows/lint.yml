@@ -1,11 +1,6 @@
 name: Lint
 
-on:
-  push:
-    branches:
-      - main
-      - rel-*
-  pull_request:
+on: [push]
 
 jobs:
   optional-lint:
